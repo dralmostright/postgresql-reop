@@ -28,6 +28,8 @@ skip_if_unavailable=False
 sslverify=false
 [root@testdb etc]#
 ```
+
+Lets setup the repo to install the postgresql
 ```
 [root@testdb ~]# dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 pgdg-redhat-repo-latest.noarch.rpm               11 kB/s |  14 kB     00:01
@@ -93,6 +95,7 @@ Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 ```
 
 Next, install the latest version of PostgreSQL by running the following command:
+```
 [root@testdb ~]# dnf install -y postgresql15-server
 Last metadata expiration check: 0:04:24 ago on Thu 01 Feb 2024 01:11:15 PM +0545.
 Dependencies resolved.
@@ -158,6 +161,7 @@ Installed:
 
 Complete!
 [root@testdb ~]#
+```
 
 We will install the postgresql-contrib component as well, which provides a set of useful extensions, additional utilities and features.
 ```
