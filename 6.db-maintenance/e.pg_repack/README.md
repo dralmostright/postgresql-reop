@@ -197,7 +197,7 @@ HINT:  The extension must first be installed on the system where PostgreSQL is r
 
 Then finally i decided to install it from binary package rather than source using [PostgreSQL repo](https://yum.postgresql.org/rpmchart/).
 ```
-[root@testdb ~]# yum install https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-8-x86_64/pg_repack_15-1.4.8-1.rhel8.x86_64.rpm
+[root@testdb ~]# yum install https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-8-x86_64/pg_repack_15-1.5.0-1PGDG.rhel8.x86_64.rpm
 Last metadata expiration check: 0:02:44 ago on Thu 08 Feb 2024 12:27:36 PM +0545.
 pg_repack_15-1.4.8-1.rhel8.x86_64.rpm                                                                                                                         65 kB/s | 107 kB     00:01
 Dependencies resolved.
@@ -205,7 +205,7 @@ Dependencies resolved.
  Package                                       Architecture                            Version                                           Repository                                     Size
 =============================================================================================================================================================================================
 Installing:
- pg_repack_15                                  x86_64                                  1.4.8-1.rhel8                                     @commandline                                  107 k
+ pg_repack_15                                  x86_64                                  1.5.0-1PGDG.rhel8                                 @commandline                                  107 k
 
 Transaction Summary
 =============================================================================================================================================================================================
@@ -220,13 +220,13 @@ Transaction check succeeded.
 Running transaction test
 Transaction test succeeded.
 Running transaction
-  Preparing        :                                                                                                                                                                     1/1
-  Installing       : pg_repack_15-1.4.8-1.rhel8.x86_64                                                                                                                                   1/1
-  Running scriptlet: pg_repack_15-1.4.8-1.rhel8.x86_64                                                                                                                                   1/1
-  Verifying        : pg_repack_15-1.4.8-1.rhel8.x86_64                                                                                                                                   1/1
+  Preparing        :                                                                                                                                                                      1/1
+  Installing       : pg_repack_15-1.5.0-1PGDG.rhel8.x86_64                                                                                                                                1/1
+  Running scriptlet: pg_repack_15-1.5.0-1PGDG.rhel8.x86_64                                                                                                                                1/1
+  Verifying        : pg_repack_15-1.5.0-1PGDG.rhel8.x86_64                                                                                                                                1/1
 
 Installed:
-  pg_repack_15-1.4.8-1.rhel8.x86_64
+  pg_repack_15-1.5.0-1PGDG.rhel8.x86_64
 
 Complete!
 [root@testdb ~]#
@@ -236,6 +236,21 @@ Finally i was able to create the extention:
 ```
 [postgres@testdb ~]$ psql -c "CREATE EXTENSION pg_repack" -d testdb
 CREATE EXTENSION
+[postgres@testdb ~]$ psql
+psql (15.5)
+Type "help" for help.
+
+postgres=# \c testdb
+You are now connected to database "testdb" as user "postgres".
+testdb=# \dx
+                                  List of installed extensions
+   Name    | Version |   Schema   |                         Description
+-----------+---------+------------+--------------------------------------------------------------
+ pg_repack | 1.5.0   | public     | Reorganize tables in PostgreSQL databases with minimal locks
+ plpgsql   | 1.0     | pg_catalog | PL/pgSQL procedural language
+(2 rows)
+
+testdb=# exit
 [postgres@testdb ~]$
 ```
 
