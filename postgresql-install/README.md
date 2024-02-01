@@ -14,6 +14,7 @@ We will be installing the PostgreSQL in Oracle Linux 8 and the easiest way to in
 [root@testdb etc]# dnf install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 [MIRROR] pgdg-redhat-repo-latest.noarch.rpm: Curl error (60): Peer certificate cannot be authenticated with given CA certificates for https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm [SSL certificate problem: unable to get local issuer certificate]
 ```
+
 If you get this type of error, we can trun the ssl chek off in yum.conf file
 ```
 [root@testdb etc]# vi /etc/yum.conf
@@ -27,7 +28,7 @@ skip_if_unavailable=False
 sslverify=false
 [root@testdb etc]#
 ```
-
+```
 [root@testdb ~]# dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 pgdg-redhat-repo-latest.noarch.rpm               11 kB/s |  14 kB     00:01
 Dependencies resolved.
@@ -58,7 +59,7 @@ Installed:
 
 Complete!
 [root@testdb ~]#
-
+```
 Lets check the default available version in the AppStream repository using the following commands:
 ```
 [root@testdb ~]# dnf module list postgresql
