@@ -254,3 +254,107 @@ testdb=# exit
 [postgres@testdb ~]$
 ```
 
+Now lets do some simulation, lets create a table:
+```
+testdb=# CREATE TABLE burritos (
+testdb(# id SERIAL UNIQUE NOT NULL primary key,
+testdb(# title VARCHAR(10) NOT NULL,
+testdb(# toppings TEXT NOT NULL,
+testdb(# thoughts TEXT,
+testdb(# code VARCHAR(4) NOT NULL,
+testdb(# UNIQUE (title, toppings)
+testdb(# );
+CREATE TABLE
+testdb=#
+```
+
+Disable the autovacuum setting for this table
+```
+testdb=# ALTER TABLE burritos SET (autovacuum_enabled = false, toast.autovacuum_enabled = false);
+ALTER TABLE
+testdb=#
+```
+
+Let us perform the update against the table
+```
+testdb=# INSERT INTO burritos( title, toppings, thoughts,code)
+testdb-# SELECT  left(md5(random()::text),10),
+testdb-# left(md5(random()::text),10),
+testdb-# left(md5(random()::text),10),
+testdb-# left(md5(random()::text),4)
+testdb-# FROM generate_series(1,100000);
+INSERT 0 100000
+testdb=#
+```
+
+Lets visit the table stats:
+```
+testdb=# SELECT relname, n_dead_tup, n_live_tup, 100*n_dead_tup/n_live_tup AS percent, left(last_vacuum::text,16) AS last_vacuum, left(last_autovacuum::text,16) AS last_autovacuum, last_analyze, left(last_autoanalyze::text,16) AS last_autoanalyze, now() FROM pg_stat_user_tables ;
+ relname  | n_dead_tup | n_live_tup | percent | last_vacuum | last_autovacuum | last_analyze | last_autoanalyze |               now
+----------+------------+------------+---------+-------------+-----------------+--------------+------------------+----------------------------------
+ burritos |          0 |     100000 |       0 |             |                 |              |                  | 2024-02-01 15:56:05.086018+05:45
+(1 row)
+
+testdb=#
+```
+
+Lets do some DML on the table:
+```
+testdb=# UPDATE burritos SET thoughts = md5(random()::text) where id < 10000;
+UPDATE 9999
+testdb=# UPDATE burritos SET thoughts = md5(random()::text) WHERE id between 10000 and 20000;
+UPDATE 10001
+testdb=# UPDATE burritos SET thoughts = md5(random()::text) WHERE id between 40000 and 90000;
+UPDATE 50001
+testdb=#
+```
+
+Review the stats:
+```
+testdb=# SELECT relname, n_dead_tup, n_live_tup, 100*n_dead_tup/n_live_tup AS percent, left(last_vacuum::text,16) AS last_vacuum, left(last_autovacuum::text,16) AS last_autovacuum, last_analyze, left(last_autoanalyze::text,16) AS last_autoanalyze, now() FROM pg_stat_user_tables ;
+ relname  | n_dead_tup | n_live_tup | percent | last_vacuum | last_autovacuum | last_analyze | last_autoanalyze |               now
+----------+------------+------------+---------+-------------+-----------------+--------------+------------------+----------------------------------
+ burritos |      70001 |     100000 |      70 |             |                 |              |                  | 2024-02-01 15:58:58.973879+05:45
+(1 row)
+
+testdb=#
+```
+
+pg_repack has a lot of options, Feel free to check them out, but lets tart with dry run:
+```
+[postgres@testdb ~]$ pg_repack -h localhost -U postgres -d testdb --dry-run --table burritos
+INFO: Dry run enabled, not executing repack
+Password:
+INFO: repacking table "public.burritos"
+[postgres@testdb ~]$
+```
+
+As the dry run didn't produce any error we are good with pg_repack
+```
+[postgres@testdb ~]$ pg_repack -h localhost -U postgres -d testdb --table burritos -k
+Password:
+INFO: repacking table "public.burritos"
+[postgres@testdb ~]$
+```
+
+And lets visit the dead tuples:
+```
+testdb=# SELECT relname, n_dead_tup, n_live_tup, 100*n_dead_tup/n_live_tup AS percent, left(last_vacuum::text,16) AS last_vacuum, left(last_autovacuum::text,16) AS last_autovacuum, last_analyze, left(last_autoanalyze::text,16) AS last_autoanalyze, now() FROM pg_stat_user_tables ;
+ relname  | n_dead_tup | n_live_tup | percent | last_vacuum | last_autovacuum |           last_analyze           | last_autoanalyze |               now
+----------+------------+------------+---------+-------------+-----------------+----------------------------------+------------------+---------------------------------
+ burritos |          0 |     100000 |       0 |             |                 | 2024-02-01 16:08:15.900545+05:45 |                  | 2024-02-01 16:09:05.63281+05:45
+(1 row)
+
+testdb=#
+```
+We can see none. Additionally we can monitor the pg_repack session using ```pg_stat_activity``` view:
+```
+select * from pg_stat_activity where application_name='pg_repack';
+```
+
+And we can runn it in parallel too using ```-j``` flab.
+```
+pg_repack -d percona -t scott.employee -j 4
+```
+
+There are lots of area where we need to explore for pg_repack but that we will be doing in other sessions.
