@@ -509,11 +509,115 @@ Confirm you can access PostgreSQL by logging into the administrative postgres da
 psql (15.5)
 Type "help" for help.
 
+postgres=#
+```
+
+By default, local system users do not require a password to access PostgreSQL. PostgreSQL refers to this as peer authentication. This means it determines the system name of the user and validates it against the database privileges. We recommend you edit the pg_hba.conf file to force local users to provide a valid password. You can determine the location of this file by running the following command within the psql shell.
+```
 postgres=# show hba_file;
               hba_file
 ------------------------------------
  /var/lib/pgsql/15/data/pg_hba.conf
 (1 row)
+
+postgres=#
+```
+
+Edit the pg_hba.conf file to require passwords from local users. Locate the line local under Unix domain socket connections only and change the METHOD attribute from peer to md5.
+
+However, we recommend you add a rule to exempt the default postgres user from the local password requirement. This allows for easier non-interactive access to PostgreSQL for maintenance tasks and scripting. Add a new line for the postgres user right above the rule for general local access. The entire section should now look like this.
+
+```
+[root@testdb ~]# cd /var/lib/pgsql/15/data/
+[root@testdb data]# vi pg_hba.conf
+[root@testdb data]# cat pg_hba.conf | grep local
+# local         DATABASE  USER  METHOD  [OPTIONS]
+# - "local" is a Unix-domain socket
+# If you want to allow non-local connections, you need to add more
+# listen on a non-local interface via the listen_addresses
+# "local" is for Unix domain socket connections only
+local   all             postgres                                peer
+local   all             all                                     md5
+
+# IPv4 local connections:
+# IPv6 local connections:
+# Allow replication connections from localhost, by a user with the
+local   replication     all                                     peer
+[root@testdb data]# 
+```
+
+You must restart PostgreSQL to apply the new access rule. And the prececence will be first line and it will fall back to next line, make sure you put the postres user on top then others.
+```
+[root@testdb data]# systemctl restart postgresql-15
+[root@testdb data]# systemctl status postgresql-15
+● postgresql-15.service - PostgreSQL 15 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-15.service; enabled; vend>
+   Active: active (running) since Thu 2024-02-01 15:31:27 +0545; 5s ago
+     Docs: https://www.postgresql.org/docs/15/static/
+  Process: 17840 ExecStartPre=/usr/pgsql-15/bin/postgresql-15-check-db-dir ${PG>
+ Main PID: 17847 (postmaster)
+    Tasks: 7 (limit: 12395)
+   Memory: 17.4M
+   CGroup: /system.slice/postgresql-15.service
+           ├─17847 /usr/pgsql-15/bin/postmaster -D /var/lib/pgsql/15/data/
+           ├─17849 postgres: logger
+           ├─17850 postgres: checkpointer
+           ├─17851 postgres: background writer
+           ├─17853 postgres: walwriter
+           ├─17854 postgres: autovacuum launcher
+           └─17855 postgres: logical replication launcher
+
+Feb 01 15:31:27 testdb.localdomain systemd[1]: postgresql-15.service: Succeeded.
+Feb 01 15:31:27 testdb.localdomain systemd[1]: Stopped PostgreSQL 15 database s>
+Feb 01 15:31:27 testdb.localdomain systemd[1]: Starting PostgreSQL 15 database >
+Feb 01 15:31:27 testdb.localdomain postmaster[17847]: 2024-02-01 15:31:27.520 +>
+Feb 01 15:31:27 testdb.localdomain postmaster[17847]: 2024-02-01 15:31:27.520 +>
+Feb 01 15:31:27 testdb.localdomain systemd[1]: Started PostgreSQL 15 database s>
+[root@testdb data]#
+```
+
+Verify the change
+```
+[postgres@testdb ~]$ psql postgres
+psql (15.5)
+Type "help" for help.
+
+postgres=#
+
+[root@testdb ~]# psql postgres
+Password for user root:
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  password authentication failed for user "root"
+[root@testdb ~]#
+```
+
+### Install the PostgreSQL Administration Package
+
+PostgreSQL’s Adminpack module adds several management and administration tools. You can find out more about the module at the [PostgreSQL documentation](https://www.postgresql.org/docs/13/adminpack.html) site. The following process installs Adminpack.
+
+Log in to the administrative postgres database in PostgreSQL.
+```
+[postgres@testdb ~]$ psql postgres
+psql (15.5)
+Type "help" for help.
+
+postgres=# 
+```
+
+Create the extension.
+```
+postgres=# CREATE EXTENSION adminpack;
+CREATE EXTENSION
+```
+
+Verify the module is correctly installed with the dx meta-command.
+```
+postgres=# \dx
+                        List of installed extensions
+   Name    | Version |   Schema   |               Description
+-----------+---------+------------+-----------------------------------------
+ adminpack | 2.1     | pg_catalog | administrative functions for PostgreSQL
+ plpgsql   | 1.0     | pg_catalog | PL/pgSQL procedural language
+(2 rows)
 
 postgres=#
 ```
