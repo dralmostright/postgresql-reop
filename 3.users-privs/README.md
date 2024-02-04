@@ -256,3 +256,17 @@ orapg=#
 ```
 
 ### Privileges
+
+By default, users cannot access any objects in schemas they do not own. To allow that, the owner of the schema must grant the USAGE privilege on the schema. By default, everyone has that privilege on the schema public. To allow users to make use of the objects in a schema, additional privileges might need to be granted, as appropriate for the object.
+```
+orapg=# GRANT USAGE ON SCHEMA hr TO testusr1;
+GRANT
+orapg=#
+```
+
+To allow users to create objects in the schema that they do not own, you need to grant them the CREATE privilege of the schema to the users:
+```
+orapg=# GRANT CREATE ON SCHEMA hr TO testusr1;
+GRANT
+orapg=#
+```
