@@ -108,3 +108,30 @@ There are several reasons why one might want to use schemas:
 * Third-party applications can be put into separate schemas so they do not collide with the names of other objects.
 
 Schemas are analogous to directories at the operating system level, except that schemas cannot be nested.
+
+To create a schema, use the CREATE SCHEMA command. Give the schema a name of your choice. For example:
+```
+orapg=# \c orapg
+You are now connected to database "orapg" as user "postgres".
+orapg=# create schema hr;
+CREATE SCHEMA
+orapg=#
+```
+
+To create or access objects in a schema, write a qualified name consisting of the schema name and table name separated by a dot:
+
+Actually, the even more general syntax ```database.schema.table``` can be used too, but at present this is just for pro forma compliance with the SQL standard. If you write a database name, it must be the same as the database you are connected to.
+
+#### The public schema
+PostgreSQL automatically creates a schema called public for every new database. Whatever object you create without specifying the schema name, PostgreSQL will place it into this public schema. Therefore, the following statements are equivalent:
+```
+CREATE TABLE table_name(
+  ...
+);
+```
+and
+```
+CREATE TABLE public.table_name(
+   ...
+);
+```
