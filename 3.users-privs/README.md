@@ -95,3 +95,16 @@ where option can be:
 Every PostgreSQL cluster has another implicit role called PUBLIC which cannot be deleted. All other roles are always granted membership in PUBLIC by default and inherit whatever privileges are currently assigned to it. Up to the latest release PUBLIC role has by default CONNECT, TEMPORARY, USAGE and EXECUTE privileges.
 
 The main thing to notice here is that the PUBLIC role always has the CONNECT privilege granted by default, which conveniently allows all roles to connect to a newly created database. Without the privilege to connect to a database, none of our newly created roles would be able to do much.
+
+### Schemas
+In PostgreSQL, a schema is a namespace that contains named database objects such as tables, views, indexes, data types, functions, stored procedures and operators.
+
+A database contains one or more named schemas, which in turn contain tables. Schemas also contain other kinds of named objects, including data types, functions, and operators. The same object name can be used in different schemas without conflict; for example, both schema1 and myschema can contain tables named mytable. Unlike databases, schemas are not rigidly separated: a user can access objects in any of the schemas in the database they are connected to, if they have privileges to do so.
+
+There are several reasons why one might want to use schemas:
+
+* To allow many users to use one database without interfering with each other.
+* To organize database objects into logical groups to make them more manageable.
+* Third-party applications can be put into separate schemas so they do not collide with the names of other objects.
+
+Schemas are analogous to directories at the operating system level, except that schemas cannot be nested.
