@@ -120,6 +120,24 @@ orapg=#
 
 To create or access objects in a schema, write a qualified name consisting of the schema name and table name separated by a dot:
 
+```
+orapg=# create table hr.employee(id varchar(10),
+orapg(#                           name varchar(20));
+CREATE TABLE
+orapg=#
+```
+
+Later we can obtain more details by issuing following query.
+```
+orapg=# select * from pg_catalog.pg_tables where schemaname='hr';
+ schemaname | tablename | tableowner | tablespace | hasindexes | hasrules | hastriggers | rowsecurity
+------------+-----------+------------+------------+------------+----------+-------------+-------------
+ hr         | employee  | postgres   |            | f          | f        | f           | f
+(1 row)
+
+orapg=#
+```
+
 Actually, the even more general syntax ```database.schema.table``` can be used too, but at present this is just for pro forma compliance with the SQL standard. If you write a database name, it must be the same as the database you are connected to.
 
 #### The public schema
@@ -135,3 +153,106 @@ CREATE TABLE public.table_name(
    ...
 );
 ```
+
+To drop a schema if it's empty (all objects in it have been dropped), use below, esle you will be prompted with error and you need to go with cascade option:
+```
+orapg=# drop schema abc;
+DROP SCHEMA
+orapg=#
+orapg=#
+orapg=# DROP SCHEMA hr;
+ERROR:  cannot drop schema hr because other objects depend on it
+DETAIL:  table hr.employee depends on schema hr
+HINT:  Use DROP ... CASCADE to drop the dependent objects too.
+orapg=#
+```
+
+To drop a schema including all contained objects, use:
+
+```
+orapg=# DROP SCHEMA hr CASCADE;
+NOTICE:  drop cascades to table hr.employee
+DROP SCHEMA
+orapg=#
+```
+
+### The Schema Search Path 
+
+In practice, you will refer to a table without its schema name e.g., staff table instead of a fully qualified name such as ```hr.staff``` table. Qualified names are tedious to write, and it's often best not to wire a particular schema name into applications anyway. Therefore tables are often referred to by unqualified names, which consist of just the table name. The system determines which table is meant by following a search path, which is a list of schemas to look in. The first matching table in the search path is taken to be the one wanted. If there is no match in the search path, an error is reported, even if matching table names exist in other schemas in the database.
+
+When you reference a table using its name only, PostgreSQL searches for the table by using the schema search path, which is a list of schemas to look in.
+
+PostgreSQL will access the first matching table in the schema search path. If there is no match, it will return an error, even the name exists in another schema in the database.
+
+The first schema in the search path is called the current schema. Note that when you create a new object without explicitly specifying a schema name, PostgreSQL will also use the current schema for the new object.
+
+The current_schema() function returns the current schema:
+```
+orapg=# SELECT current_schema();
+ current_schema
+----------------
+ public
+(1 row)
+
+orapg=#
+```
+
+This is why PostgreSQL uses public for every new object that you create.
+
+To view the current search path, you use the SHOW command in psql tool:
+```
+orapg=# show search_path;
+   search_path
+-----------------
+ "$user", public
+(1 row)
+
+orapg=#
+```
+
+In this output:
+
+* The "$user" specifies that the first schema that PostgreSQL will use to search for the object, which has the same name as the current user. For example, if you use the postgres user to login and access the staff table. PostgreSQL will search for the staff table in the postgres schema. If it cannot find any object like that, it continues to look for the object in the public schema.
+* The second element refers to the public schema as we have seen before.
+
+To add the new schema to the search path, you use the following command:
+```
+orapg=# create schema hr;
+CREATE SCHEMA
+orapg=# show search_path;
+   search_path
+-----------------
+ "$user", public
+(1 row)
+
+orapg=# SET search_path TO hr, "$user", public;
+SET
+orapg=# show search_path;
+      search_path
+------------------------
+ hr, "$user", public
+(1 row)
+
+orapg=#
+```
+
+Now, if you create a new table named staff without specifying the schema name, PostgreSQL will put this staff table into the hr schema:
+```
+orapg=# CREATE TABLE hr.staff(
+orapg(#     staff_id SERIAL PRIMARY KEY,
+orapg(#     first_name VARCHAR(45) NOT NULL,
+orapg(#     last_name VARCHAR(45) NOT NULL,
+orapg(#     email VARCHAR(100) NOT NULL UNIQUE
+orapg(# );
+CREATE TABLE
+orapg=# \dt
+         List of relations
+ Schema | Name  | Type  |  Owner
+--------+-------+-------+----------
+ hr     | staff | table | postgres
+(1 row)
+
+orapg=#
+```
+
+### Privileges
