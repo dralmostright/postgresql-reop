@@ -23,6 +23,17 @@ And the log directory will be ```log``` relative to datadir ```/var/lib/pgsql/14
 2024-02-04 08:54:17.918 EST [8506] LOG:  database system is ready to accept connections
 ```
 
+Addtionally if you want to see where the log file has been located, we can use following:
+```
+postgres=# SELECT pg_current_logfile();
+   pg_current_logfile
+------------------------
+ log/postgresql-Sun.log
+(1 row)
+
+postgres=#
+```
+
 Normally it is better to start postgres in the background. For this, use the usual Unix shell syntax:
 ```
 [postgres@pgvm1 ~]$ postgres -D /var/lib/pgsql/14/data  >> /var/lib/pgsql/14/data/log/postgresql-Sun.log 2>&1 &
