@@ -49,3 +49,49 @@ Alternatively, PostgreSQL still supports the older CREATE USER command, but it's
 This is the most basic needed for role/user at this point, we will explore more as we go.
 
 ### Group Role
+
+To create a group role in PostgreSQL, create a role that is not allowed to login. As mentioned earlier, this is simply a convention that denotes the role as a group.
+```
+postgres=# CREATE ROLE testgrp WITH NOLOGIN;
+CREATE ROLE
+postgres=# \du
+                                   List of roles
+ Role name |                         Attributes                         | Member of
+-----------+------------------------------------------------------------+-----------
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+ testgrp   | Cannot login                                               | {}
+ testusr1  |                                                            | {}
+
+postgres=#
+```
+Like user roles, PostgreSQL still supports the older CREATE GROUP command, although it is a direct alias for CREATE ROLE because all roles are created with NOLOGIN by default, which as we've discussed, means the role is used as a group. There is no advantage of using CREATE GROUP and it may be deprecated at some point. 
+
+There are numerous other role attributes that can be applied at the time of creation or through ALTER ROLE. The below snapshot is from PostgreSQL documentation.
+
+```
+CREATE ROLE name [ [ WITH ] option [ ... ] ]
+
+where option can be:
+
+      SUPERUSER | NOSUPERUSER
+    | CREATEDB | NOCREATEDB
+    | CREATEROLE | NOCREATEROLE
+    | INHERIT | NOINHERIT
+    | LOGIN | NOLOGIN
+    | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
+    | CONNECTION LIMIT connlimit
+    | [ ENCRYPTED ] PASSWORD 'password' | PASSWORD NULL
+    | VALID UNTIL 'timestamp'
+    | IN ROLE role_name [, ...]
+    | IN GROUP role_name [, ...]
+    | ROLE role_name [, ...]
+    | ADMIN role_name [, ...]
+    | USER role_name [, ...]
+    | SYSID uid
+```
+
+### PUBLIC Role
+Every PostgreSQL cluster has another implicit role called PUBLIC which cannot be deleted. All other roles are always granted membership in PUBLIC by default and inherit whatever privileges are currently assigned to it. Up to the latest release PUBLIC role has by default CONNECT, TEMPORARY, USAGE and EXECUTE privileges.
+
+The main thing to notice here is that the PUBLIC role always has the CONNECT privilege granted by default, which conveniently allows all roles to connect to a newly created database. Without the privilege to connect to a database, none of our newly created roles would be able to do much.
