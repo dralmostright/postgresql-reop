@@ -115,3 +115,19 @@ server signaled
 [postgres@testdb ~]$
 ```
 
+### The pg_hba.conf File
+
+Client authentication is controlled by a configuration file, which traditionally is named pg_hba.conf and is stored in the database cluster's data directory. (HBA stands for host-based authentication.) A default pg_hba.conf file is installed when the data directory is initialized by initdb. The configuration file has 5 parameters, namely: TYPE (host type), DATABASE (database name), USER (user name), ADDRESS (IP address and mask), METHOD (encryption method - Authentication methods/options).
+
+In the beginning, you need to know two basic types, local and host. "local" means local domain socket and only local processes can access it. "host" means "TCP" connection. The second field is the "database" name that the client wants to access. The rest fields are user, source ip/address (for local access, there is no ip/address), authentication method, and authentication options. The following is an example record.
+```
+[postgres@testdb data]$ cat pg_hba.conf | tail -13 | head -3
+# "local" is for Unix domain socket connections only
+local   all             postgres                                scram-sha-256
+host    devdb           ram                   172.20.10.0/24    scram-sha-256
+local   all             all                                     md5
+[postgres@testdb data]$
+```
+If we go with the second record, user postgres can connect to devdb database from subnet 172.20.10.0/24 IP range should use scram-sha-256 password to authenticate.
+
+The pg_hba.conf “record order” rule of thumb: narrow range connection with weak authentication first, then open the range of client connection with more robust authentication. As you can see in the first record in the example, all users who connect from the local socket to all databases should use peer authentication. If users are not connecting from the local socket, PostgreSQL tries to evaluate the next record (host all all 127.0.0.1/32 scram-sha-256) till all are exhausted.
