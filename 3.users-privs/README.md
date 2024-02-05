@@ -48,6 +48,13 @@ Alternatively, PostgreSQL still supports the older CREATE USER command, but it's
 
 This is the most basic needed for role/user at this point, we will explore more as we go.
 
+Similary you can change the attributes of the role/user by using alter user command:
+```
+postgres=# alter role testusr1 with password 'welcome2';
+ALTER ROLE
+postgres=#
+```
+
 ### Group Role
 
 To create a group role in PostgreSQL, create a role that is not allowed to login. As mentioned earlier, this is simply a convention that denotes the role as a group.
