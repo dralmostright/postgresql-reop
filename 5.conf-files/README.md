@@ -137,3 +137,6 @@ The change in HBA requires a reload of PostgreSQL, you don't have to implement a
 SELECT pg_reload_conf();
 ```
 You can do it from the command line too, using ```pg_ctl reload``` and other OS provided variants.
+
+### pg_ident.conf
+PostgreSQL also has a one more file related user access permission and that is pg_ident.conf. PostgreSQL provides Ident-based authentication and It works by obtaining the client’s operating system user name and using it as the allowed database user name with an optional user name mapping.
