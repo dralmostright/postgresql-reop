@@ -131,3 +131,9 @@ local   all             all                                     md5
 If we go with the second record, user postgres can connect to devdb database from subnet 172.20.10.0/24 IP range should use scram-sha-256 password to authenticate.
 
 The pg_hba.conf “record order” rule of thumb: narrow range connection with weak authentication first, then open the range of client connection with more robust authentication. As you can see in the first record in the example, all users who connect from the local socket to all databases should use peer authentication. If users are not connecting from the local socket, PostgreSQL tries to evaluate the next record (host all all 127.0.0.1/32 scram-sha-256) till all are exhausted.
+
+The change in HBA requires a reload of PostgreSQL, you don't have to implement a restart at this point. This can be done in SQL with the following query, when connected to your PostgreSQL node:
+```
+SELECT pg_reload_conf();
+```
+You can do it from the command line too, using ```pg_ctl reload``` and other OS provided variants.
