@@ -50,6 +50,23 @@ This is the most basic needed for role/user at this point, we will explore more 
 
 Similary you can change the attributes of the role/user by using alter user command:
 ```
+ALTER USER name [ [ WITH ] option [ ... ] ]
+
+where option can be:
+
+    CREATEDB | NOCREATEDB
+    | CREATEUSER | NOCREATEUSER 
+    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD 'password' 
+    | VALID UNTIL 'abstime'
+
+ALTER USER name RENAME TO newname
+
+ALTER USER name SET parameter { TO | = } { value | DEFAULT }
+ALTER USER name RESET parameter
+```
+The third and the fourth variant change a user's session default for a specified configuration variable. Whenever the user subsequently starts a new session, the specified value becomes the session default, overriding whatever setting is present in postgresql.conf or has been received from the postmaster command line. Ordinary users can change their own session defaults. Superusers can change anyone's session defaults. Certain variables cannot be set this way, or can only be set by a superuser.
+
+```
 postgres=# alter role testusr1 with password 'welcome2';
 ALTER ROLE
 postgres=#
