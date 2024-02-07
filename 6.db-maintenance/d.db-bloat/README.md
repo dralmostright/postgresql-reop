@@ -22,3 +22,14 @@ There are several reasons why table bloat should be on your radar if you’re sc
 * Wasted disk space. Dead tuples and excessive page allocations also cause your disk usage to be higher than needed, meaning more infrastructure costs. 
 
 * Operational challenges. Everything slows down if your table is bloated, as it’s essentially larger—e.g., if you're using replication, bloated tables can cause replication lag since the replication process needs to handle more data than necessary; backing up a bloated table takes longer and requires more storage; restoring from a backup can become more time-consuming; and so on. 
+
+#### What Increases Table Bloat? 
+As we said previously, table bloat is, unfortunately, a natural consequence of how PostgreSQL manages data. But it is also true that certain workload patterns lead to more bloat than others, for example: 
+
+* High volume of UPDATEs/DELETEs. Tables with frequent updates can quickly accumulate these dead rows since when a row is updated in Postgres, a new version of the row is created, and the old version is marked as "dead". Similarly, when rows are deleted, they aren't immediately removed from the table. Instead, they're marked for deletion and later removed by the autovacuum process (more about autovacuum later).
+
+* Bulk INSERTs followed by DELETEs. Batch operations, like inserting a large number of rows followed by deleting many of them, can lead to rapid bloat accumulation. This is especially true if these operations are frequent and autovacuum doesn't have enough time or resources to clean up between these batches.
+
+* Long-running transactions. Long-running transactions can prevent dead rows from being vacuumed. Until a transaction is complete, the rows that were modified or deleted during that transaction cannot be vacuumed, even if they're no longer needed. This can lead to a temporary buildup of bloat.
+
+
