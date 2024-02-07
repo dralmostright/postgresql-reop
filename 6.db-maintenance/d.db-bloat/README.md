@@ -11,7 +11,7 @@ What this means? and why is it of any significance? Over the time these dead tup
 
 You see, these rows were marked invisible but they are still part of the table and are consuming the disk space… Assuming there are a million rows in a table, where each row takes 100bytes of disk space. This table is assumed to be consuming around 100MB of disk space. Now let’s assume there are 30% invisible rows present in the table, that would mean that 130MB’s of disk space is being utilised by the dead tuples. This looks insignificant amount but consider the real world scenario where tables use GB/TB’s of data and it becomes a serious problem.
 
-**** Why Is Table Bloat an Issue? 
+#### Why Is Table Bloat an Issue? 
 
 There are several reasons why table bloat should be on your radar if you’re scaling PostgreSQL or running large transactional PostgreSQL tables:
 
