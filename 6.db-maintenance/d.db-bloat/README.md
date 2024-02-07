@@ -127,7 +127,7 @@ The VACUUM command adds expired rows to the free space map so that the space can
 
 When a table accumulates significant bloat, running the VACUUM command is insufficient. For small tables, running VACUUM FULL <table_name> can reclaim space used by rows that overflowed the free space map and reduce the size of the table file. However, a VACUUM FULL statement is an expensive operation that requires an ACCESS EXCLUSIVE lock and may take an exceptionally long and unpredictable amount of time to finish for large tables. You should run VACUUM FULL on tables during a time when users and applications do not require access to the tables being vacuumed, such as during a time of low activity, or during a maintenance window.
 
-<strong>Warning<strong>: When a table is significantly bloated, it is better to run VACUUM before running ANALYZE. Analyzing a severely bloated table can generate poor statistics if the sample contains empty pages, so it is good practice to vacuum a bloated table before analyzing it.
+<strong>Warning</strong>: When a table is significantly bloated, it is better to run VACUUM before running ANALYZE. Analyzing a severely bloated table can generate poor statistics if the sample contains empty pages, so it is good practice to vacuum a bloated table before analyzing it.
 
 ```
 testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
