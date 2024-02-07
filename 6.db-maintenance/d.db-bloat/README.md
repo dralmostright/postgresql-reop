@@ -32,4 +32,90 @@ As we said previously, table bloat is, unfortunately, a natural consequence of h
 
 * Long-running transactions. Long-running transactions can prevent dead rows from being vacuumed. Until a transaction is complete, the rows that were modified or deleted during that transaction cannot be vacuumed, even if they're no longer needed. This can lead to a temporary buildup of bloat.
 
+#### Decting BLOATS
+One of the most popular and efficient tools for this purpose in PostgreSQL is pgstattuple: 
+
+Lets review the extensions and if not available lets create one.
+```
+[postgres@testdb ~]$ psql
+psql (15.5)
+Type "help" for help.
+
+postgres=# \c testdb
+You are now connected to database "testdb" as user "postgres".
+testdb=#
+testdb=# \dx
+                 List of installed extensions
+  Name   | Version |   Schema   |         Description
+---------+---------+------------+------------------------------
+ plpgsql | 1.0     | pg_catalog | PL/pgSQL procedural language
+(1 row)
+
+testdb=# CREATE EXTENSION pgstattuple;
+CREATE EXTENSION
+testdb=# \dx
+                   List of installed extensions
+    Name     | Version |   Schema   |         Description
+-------------+---------+------------+------------------------------
+ pgstattuple | 1.5     | public     | show tuple-level statistics
+ plpgsql     | 1.0     | pg_catalog | PL/pgSQL procedural language
+(2 rows)
+
+testdb=# SELECT oid, extname, extversion FROM pg_extension;
+  oid  |   extname   | extversion
+-------+-------------+------------
+ 13527 | plpgsql     | 1.0
+ 24604 | pgstattuple | 1.5
+(2 rows)
+
+testdb=#
+```
+Note: The extension needs to be created on each database.
+
+
+Now lets create table and index and perform some deletes:
+```
+testdb=# CREATE TABLE test as SELECT x, md5(random()::text) as y FROM generate_Series(1, 1000000) x;
+SELECT 1000000
+testdb=# CREATE INDEX ON test (x);
+CREATE INDEX
+testdb=#
+testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
+testdb-# pg_size_pretty(pg_relation_size('test_x_idx')) as index_size,
+testdb-# (pgstattuple('test')).dead_tuple_percent;
+ table_size | index_size | dead_tuple_percent
+------------+------------+--------------------
+ 65 MB      | 21 MB      |                  0
+(1 row)
+
+testdb=#
+testdb=# DELETE FROM test WHERE x % 3 = 0;
+DELETE 333333
+testdb=# ANALYZE test;
+ANALYZE
+testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
+pg_size_pretty(pg_relation_size('test_x_idx')) as index_size,
+(pgstattuple('test')).dead_tuple_percent;
+ table_size | index_size | dead_tuple_percent
+------------+------------+--------------------
+ 65 MB      | 21 MB      |              29.78
+(1 row)
+
+testdb=#
+```
+
+See the table size remains the same, however the output of pgstattuple shows that 29.78% of disk space is wasted. It’s taking the space in table but not useable anymore. Now let’s take a look at the index.
+```
+testdb=# SELECT pg_relation_size('test') as table_size,
+testdb-#  pg_relation_size('test_x_idx') as index_size,
+testdb-# 100-(pgstatindex('test_x_idx')).avg_leaf_density as bloat_ratio;
+ table_size | index_size | bloat_ratio
+------------+------------+-------------
+   68272128 |   22487040 |       39.86
+(1 row)
+
+testdb=#
+```
+After the above operations, index has become around 40% bloated. That means that the performance of this index will degrade because that much entries are either empty or pointing to dead tuples.
+
 
