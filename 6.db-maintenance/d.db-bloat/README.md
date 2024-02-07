@@ -191,7 +191,14 @@ This method does not lock the table for any read or write operations and conside
 * REINDEX
 This option can be used to remove the bloat from indexes. This command rebuilds the index specified or all indexes on the table. This option does not blocks the reads but will block the writes. However one can use the CONCURRENTLY option to avoid that but it may longer to complete than standard index creation.
 ```
-REINDEX [ ( VERBOSE ) ] { INDEX | TABLE | SCHEMA | DATABASE | SYSTEM } name;
+REINDEX [ ( option [, ...] ) ] { INDEX | TABLE | SCHEMA } [ CONCURRENTLY ] name
+REINDEX [ ( option [, ...] ) ] { DATABASE | SYSTEM } [ CONCURRENTLY ] [ name ]
+
+where option can be one of:
+
+    CONCURRENTLY [ boolean ]
+    TABLESPACE new_tablespace
+    VERBOSE [ boolean ]
 ```
 
 Lets do the re-indexing:
