@@ -118,4 +118,106 @@ testdb=#
 ```
 After the above operations, index has become around 40% bloated. That means that the performance of this index will degrade because that much entries are either empty or pointing to dead tuples.
 
+#### Removing Bloats
+There are couple of ways which can be utilised to avoid the bloat in tables and indexes.
 
+1. VACUUM
+
+The VACUUM command adds expired rows to the free space map so that the space can be reused. When VACUUM is run regularly on a table that is frequently updated, the space occupied by the expired rows can be promptly reused, preventing the table file from growing larger. It is also important to run VACUUM before the free space map is filled. For heavily updated tables, you may need to run VACUUM at least once a day to prevent the table from becoming bloated.
+
+When a table accumulates significant bloat, running the VACUUM command is insufficient. For small tables, running VACUUM FULL <table_name> can reclaim space used by rows that overflowed the free space map and reduce the size of the table file. However, a VACUUM FULL statement is an expensive operation that requires an ACCESS EXCLUSIVE lock and may take an exceptionally long and unpredictable amount of time to finish for large tables. You should run VACUUM FULL on tables during a time when users and applications do not require access to the tables being vacuumed, such as during a time of low activity, or during a maintenance window.
+
+<strong>Warning<strong>: When a table is significantly bloated, it is better to run VACUUM before running ANALYZE. Analyzing a severely bloated table can generate poor statistics if the sample contains empty pages, so it is good practice to vacuum a bloated table before analyzing it.
+
+```
+testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
+pg_size_pretty(pg_relation_size('test_x_idx')) as index_size,
+(pgstattuple('test')).dead_tuple_percent;
+ table_size | index_size | dead_tuple_percent
+------------+------------+--------------------
+ 65 MB      | 21 MB      |                  0
+(1 row)
+
+testdb=# vacuum verbose analyze test;
+INFO:  vacuuming "testdb.public.test"
+INFO:  finished vacuuming "testdb.public.test": index scans: 0
+pages: 0 removed, 8334 remain, 1 scanned (0.01% of total)
+tuples: 0 removed, 666667 remain, 0 are dead but not yet removable
+removable cutoff: 763, which was 0 XIDs old when operation ended
+index scan not needed: 0 pages from table (0.00% of total) had 0 dead item identifiers removed
+avg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s
+buffer usage: 15 hits, 0 misses, 0 dirtied
+WAL usage: 0 records, 0 full page images, 0 bytes
+system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+INFO:  vacuuming "testdb.pg_toast.pg_toast_24597"
+INFO:  finished vacuuming "testdb.pg_toast.pg_toast_24597": index scans: 0
+pages: 0 removed, 0 remain, 0 scanned (100.00% of total)
+tuples: 0 removed, 0 remain, 0 are dead but not yet removable
+removable cutoff: 763, which was 0 XIDs old when operation ended
+new relfrozenxid: 763, which is 6 XIDs ahead of previous value
+index scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed
+avg read rate: 18.825 MB/s, avg write rate: 18.825 MB/s
+buffer usage: 19 hits, 1 misses, 1 dirtied
+WAL usage: 1 records, 0 full page images, 188 bytes
+system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+INFO:  analyzing "public.test"
+INFO:  "test": scanned 8334 of 8334 pages, containing 666667 live rows and 0 dead rows; 30000 rows in sample, 666667 estimated total rows
+VACUUM
+testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
+pg_size_pretty(pg_relation_size('test_x_idx')) as index_size,
+(pgstattuple('test')).dead_tuple_percent;
+ table_size | index_size | dead_tuple_percent
+------------+------------+--------------------
+ 65 MB      | 21 MB      |                  0
+(1 row)
+
+testdb=#
+```
+In our case the autovacuum was configured for the table hence the dead tuple was marked as free space. However we did run manually too also note that vacuum cannot be done for indexes hence we might need to go for second option.
+
+2. Physical Reordering
+
+If the vacuum could not keep up and help avoiding the bloat’s then you will have to do physical reordering of the table. The physical reordering involves rewriting the whole table. There are couple of ways in which this can be achieved.
+
+* VACUUM FULL
+VACUUM FULL will remove all bloat’s in a table and its associated indexes completely and will reclaim the disk space to OS. This will reduce the on disk table size. It does all that with rewriting the whole table,  however this is an expansive operation and it will lock the table or index for the duration of this operation, this is not desirable in most situations.
+
+* CLUSTER
+The other option is to use the CLUSTER command. This will also rewrite the table but it does that according to the specified index. Other then that it also requires to lock the table and prevents read and write operation on the table until CLUSTER operation is completed.
+
+* pg_repack
+This is an extension that is helpful in situations where VACUUM FULL or CLUSTER might not work. This extension restructures the table by creating a completely new table based on the data of the bloated table. While tracking the changes being made to the original table and will swap the new table with the original in the end.
+This method does not lock the table for any read or write operations and considerably faster than VACUUM FULL or CLUSTER commands.
+* REINDEX
+This option can be used to remove the bloat from indexes. This command rebuilds the index specified or all indexes on the table. This option does not blocks the reads but will block the writes. However one can use the CONCURRENTLY option to avoid that but it may longer to complete than standard index creation.
+```
+REINDEX [ ( VERBOSE ) ] { INDEX | TABLE | SCHEMA | DATABASE | SYSTEM } name;
+```
+
+Lets do the re-indexing:
+```
+testdb=# reindex index test_x_idx;
+REINDEX
+testdb=# SELECT pg_size_pretty(pg_relation_size('test')) as table_size,
+pg_size_pretty(pg_relation_size('test_x_idx')) as index_size,
+(pgstattuple('test')).dead_tuple_percent;
+ table_size | index_size | dead_tuple_percent
+------------+------------+--------------------
+ 65 MB      | 14 MB      |                  0
+(1 row)
+
+testdb=#
+```
+
+#### REINDEX vs. DROP INDEX & CREATE INDEX
+The REINDEX statement rebuilds the index contents from the scratch, which has a similar effect as dropping and recreate of the index. However, the locking mechanisms between them are different.
+
+##### The REINDEX statement:
+
+* Locks writes but not reads from the table to which the index belongs.
+* Takes an exclusive lock on the index that is being processed, which blocks read that attempts to use the index.
+
+##### The DROP INDEX & CREATE INDEX statements:
+
+* First, the DROP INDEX locks both writes and reads of the table to which the index belongs by acquiring an exclusive lock on the table.
+* Then, the subsequent CREATE INDEX statement locks out writes but not reads from the index’s parent table. However, reads might be expensive during the creation of the index.
