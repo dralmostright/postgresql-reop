@@ -25,3 +25,6 @@ Since collection of statistics adds some overhead to query execution, the system
 Normally these parameters are set in postgresql.conf so that they apply to all server processes, but it is possible to turn them on or off in individual sessions using the SET command. 
 
 Cumulative statistics are collected in shared memory. Every PostgreSQL process collects statistics locally, then updates the shared data at appropriate intervals. When a server, including a physical replica, shuts down cleanly, a permanent copy of the statistics data is stored in the pg_stat subdirectory, so that statistics can be retained across server restarts. In contrast, when starting from an unclean shutdown (e.g., after an immediate shutdown, a server crash, starting from a base backup, and point-in-time recovery), all statistics counters are reset.
+
+#### Viewing Statistics
+Several predefined views are available to show the current state of the system. There are also several other views available to show the accumulated statistics. Alternatively, one can build custom views using the underlying cumulative statistics functions which we will discuss in next sections.
