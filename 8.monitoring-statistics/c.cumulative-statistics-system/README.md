@@ -177,3 +177,9 @@ Cumulative statistics views and functions to monitor collected data are based on
             </tr>
           </tbody>
 </table>
+
+#### Wait events:
+
+Understanding PostgreSQL Wait Statistics is critical for optimizing database performance. Wait Statistics provide insights into the resources that are being blocked and the time that is being spent waiting for those resources. Here’s an overview of PostgreSQL Wait Events:
+
+<table><tbody><tr><th>Wait Event Name</th><th>Description</th><th>Impact on Performance</th></tr><tr><td>LWLock</td><td>A lightweight lock that is used to synchronize access to shared memory data structures</td><td>Can cause contention on hot shared memory data structures</td></tr><tr><td>Lock</td><td>A lock that is used to synchronize access to a relation, page, or tuple</td><td>Can cause contention on frequently accessed tables or indexes</td></tr><tr><td>Buffer Pin</td><td>Waiting for a buffer to be pinned in memory</td><td>Can indicate a shortage of buffer cache memory</td></tr><tr><td>Buffer IO</td><td>Waiting for an I/O operation to complete on a buffer</td><td>Can indicate slow disk I/O</td></tr><tr><td>Extension</td><td>Waiting for a shared library extension to load or unload</td><td>Can indicate issues with shared library configuration</td></tr><tr><td>IPC</td><td>Waiting for an interprocess communication resource</td><td>Can indicate contention for system resources</td></tr><tr><td>Lock Manager</td><td>Waiting for the lock manager to complete a request</td><td>Can indicate contention for lock manager resources</td></tr><tr><td>Authentication</td><td>Waiting for a user authentication request to complete</td><td>Can indicate slow user authentication</td></tr><tr><td>Replication Sender</td><td>Waiting for the replication sender to catch up with the standby</td><td>Can indicate issues with replication lag</td></tr></tbody></table>
