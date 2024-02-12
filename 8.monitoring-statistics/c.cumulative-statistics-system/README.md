@@ -28,3 +28,26 @@ Cumulative statistics are collected in shared memory. Every PostgreSQL process c
 
 #### Viewing Statistics
 Several predefined views are available to show the current state of the system. There are also several other views available to show the accumulated statistics. Alternatively, one can build custom views using the underlying cumulative statistics functions which we will discuss in next sections.
+
+Cumulative statistics views and functions to monitor collected data are based on certian intervals.
+
+##### Dynamic Statistics Views
+
+| HostName | Instance Type | Operating System & MySQL version |
+| ----------- | ----------- | -----------------|
+
+| View Name	| Description |
+| ----------- | ------------- |
+| pg_stat_activity |One row per server process, showing information related to the current activity of that process, such as state and current query. |
+| pg_stat_replication | One row per WAL sender process, showing statistics about replication to that sender's connected standby server.|
+| pg_stat_wal_receiver	Only one row, showing statistics about the WAL receiver from that receiver's connected server. See pg_stat_wal_receiver for details.
+| pg_stat_recovery_prefetch	Only one row, showing statistics about blocks prefetched during recovery. See pg_stat_recovery_prefetch for details.
+| pg_stat_subscription	At least one row per subscription, showing information about the subscription workers. See pg_stat_subscription for details.
+| pg_stat_ssl	One row per connection (regular and replication), showing information about SSL used on this connection. See pg_stat_ssl for details.
+| pg_stat_gssapi	One row per connection (regular and replication), showing information about GSSAPI authentication and encryption used on this connection. See pg_stat_gssapi for details.
+| pg_stat_progress_analyze	One row for each backend (including autovacuum worker processes) running ANALYZE, showing current progress. See Section 28.4.1.
+| pg_stat_progress_create_index	One row for each backend running CREATE INDEX or REINDEX, showing current progress. See Section 28.4.4.
+| pg_stat_progress_vacuum	One row for each backend (including autovacuum worker processes) running VACUUM, showing current progress. See Section 28.4.5.
+| pg_stat_progress_cluster	One row for each backend running CLUSTER or VACUUM FULL, showing current progress. See Section 28.4.2.
+| pg_stat_progress_basebackup	One row for each WAL sender process streaming a base backup, showing current progress. See Section 28.4.6.
+| pg_stat_progress_copy	One row for each backend running COPY, showing current progress. See Section 28.4.3.
