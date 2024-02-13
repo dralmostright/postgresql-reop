@@ -45,9 +45,9 @@ There are multiple other options available to optimize size and time like increa
 |--------|------------|
 |-a |Data Only. Do not dump the data definitions|
 |-s |Data Definitions only. |
-|-n <schema> |Dump from specified schema only|
-|-t <table>|Dump specified table only|
-|-f <filename> |Send dump to sepcified file|
+|-n \<schema\> |Dump from specified schema only|
+|-t \<table\>|Dump specified table only|
+|-f \<filename\> |Send dump to sepcified file|
 |-Fp |Dump in plain-text SQL script|
 |-Ft |Dump in tar format|
 |-Fd |dump in directory FOrmat|
