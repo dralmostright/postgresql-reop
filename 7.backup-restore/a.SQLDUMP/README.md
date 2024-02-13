@@ -40,6 +40,21 @@ Postgres comes with a pg_dumpall command which allows the users to backup the wh
 
 There are multiple other options available to optimize size and time like increasing number of threads, compressing etc. However here we are exploring on the basics.
 
+#### pg_dump Options
+|OPtions | Description|
+|--------|------------|
+|-a |Data Only. Do not dump the data definitions|
+|-s |Data Definitions only. |
+|-n |Dump from specified schema only|
+|-t |Dump specified table only|
+|-f |Send dump to sepcified file|
+|-Fp |Dump in plain-text SQL script|
+|-Ft |Dump in tar format|
+|-Fd |dump in directory FOrmat|
+|-j n |Dump in parallel where n is the number of threads|
+|-B |Excludes large objects in dump|
+|-v |Verbose options |
+
 ### Restore of PostgreSQL
 
 Here again we will discuss only about the logical backup restore.
