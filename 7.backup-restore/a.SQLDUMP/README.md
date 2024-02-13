@@ -58,3 +58,11 @@ There are multiple other options available to optimize size and time like increa
 ### Restore of PostgreSQL
 
 Here again we will discuss only about the logical backup restore.
+Backup taken using pg_dump with plain text format (Fp) and backups taken using pg_dumpall needs to be restored using psql client.
+Backup taken using pg_dump with custom(Fc), tar(Ft) and directory (Fd) formats needs to be restored using pg_restore utility. It supports parallel jobs for during resotre. Selected objects can be restore.
+
+#### pg_restore Options
+<table>
+<th><td>Options</td><td>Description</td></th>
+<tr><td>-F[c|d|t]</td><td>Backup file format</td></tr>
+</table>
