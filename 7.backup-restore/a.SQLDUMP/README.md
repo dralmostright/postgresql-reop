@@ -69,8 +69,8 @@ Backup taken using pg_dump with custom(Fc), tar(Ft) and directory (Fd) formats n
 <tr><td>-C </td><td>Create the database named in the dumpfile and restore directly into it</td></tr>
 <tr><td>-a</td><td>Restore the data only, not the data definitions</td></tr>
 <tr><td>-s</td><td>Restore the data definitionsd</td></tr>
-<tr><td>-n \<schema\></td><td>Restore only objects from specified schema</td></tr>
-<tr><td>-N \<schema\></td><td>Do not Restore on specified schema</td></tr>
-<tr><td>-t \<table\></td><td>Restore only specified table</td></tr>
+<tr><td>-n schemaname</td><td>Restore only objects from specified schema</td></tr>
+<tr><td>-N schemaname</td><td>Do not Restore on specified schema</td></tr>
+<tr><td>-t tablename</td><td>Restore only specified table</td></tr>
 <tr><td>-v </td><td>Verbose option</td></tr>
 </table>
