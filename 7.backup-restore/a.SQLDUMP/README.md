@@ -63,6 +63,6 @@ Backup taken using pg_dump with custom(Fc), tar(Ft) and directory (Fd) formats n
 
 #### pg_restore Options
 <table>
-<th><td>Options</td><td>Description</td></th>
+<tr><th>Options</th><th>Description</th></tr>
 <tr><td>-F[c|d|t]</td><td>Backup file format</td></tr>
 </table>
