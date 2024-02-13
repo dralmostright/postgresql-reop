@@ -24,3 +24,13 @@ In general there are two types of File system backup:
 * Database Server start/end backup mode
 * Complete Backups
 * Two methods - Low evel API & pg_basebackup
+
+Continuous Archiving:
+PostgreSQL maintains WAL files for all transactions in pg_wal directly
+PostgreSQL automatically maintains the WAL logs which are full and switched and reused.
+Continuous archiving can be setup to keep a copy of switched WAL Logs which can be later used for recovery
+It also enables online file system backup of a database cluster.
+Requirements:
+- wal_level must be set to replica
+- archive_mode must be set to on
+- archive_command must be set in postgresql.conf which archives WAL logs and supports PITR
