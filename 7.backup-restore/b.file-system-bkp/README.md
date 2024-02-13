@@ -38,9 +38,9 @@ Requirements:
 #### Continuous Archiving Methods:
 ##### Archiver Process
 * Parameters in postgresql.conf file
- - wal_level=replica
- - archive_mode=on
- - archive_command='cp -i %p /psql/archive/%f'
+	- wal_level=replica
+	- archive_mode=on
+	- archive_command='cp -i %p /psql/archive/%f'
 * Restart the database server
 * Archive files are generate after every log switch
 
@@ -134,3 +134,9 @@ postgres=#
 * This backup can be used for PITR or Streaming Replication
 * pg_basebackup makes a binary copy of the database cluster files
 * System is automatically put in and out of backup mode.
+
+#### Steps require to take Base Backup:
+* Modify pg_hba.conf so that the database is accessilbe
+* Database must be in contineous archive mode and bew two parameters should also be set:
+	- max_wal_senders = 3
+	- wal_keep_size=512
