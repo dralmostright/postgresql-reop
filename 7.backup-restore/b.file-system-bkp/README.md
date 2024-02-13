@@ -137,6 +137,65 @@ postgres=#
 
 #### Steps require to take Base Backup:
 * Modify pg_hba.conf so that the database is accessilbe
-* Database must be in contineous archive mode and bew two parameters should also be set:
+* Database must be in contineous archive mode and bew two parameters should also be set on postgresql.conf:
 	- max_wal_senders = 3
 	- wal_keep_size=512
+	
+Continuous archive we have already done now lets verify the rest two parameters:
+```
+postgres=# show max_wal_senders;
+ max_wal_senders
+-----------------
+ 10
+(1 row)
+
+postgres=# show wal_keep_size;
+ wal_keep_size
+---------------
+ 0
+(1 row)
+
+postgres=#
+```
+As we can see ```max_wal_senders``` is already 3+ hence we will make change to ```wal_keep_size```
+```
+[postgres@pgvm1 data]$ pg_ctl -D $PGDATA stop -mf
+waiting for server to shut down.... done
+server stopped
+[postgres@pgvm1 data]$ vi postgresql.conf
+[postgres@pgvm1 data]$
+[postgres@pgvm1 data]$ pg_ctl -D $PGDATA start
+waiting for server to start....2024-02-13 01:28:56.670 EST [6384] LOG:  redirecting log output to logging collector process
+2024-02-13 01:28:56.670 EST [6384] HINT:  Future log output will appear in directory "log".
+ done
+server started
+[postgres@pgvm1 data]$
+```
+
+Now lets verify the change:
+```
+postgres=# show wal_keep_size;
+ wal_keep_size
+---------------
+ 512MB
+(1 row)
+
+postgres=#
+```
+
+### Options for pg_basebackup
+| Option	| Description |
+| ----------- | ------------- |
+|-D <directory name> | Location of backup|
+|-F <p or t> | Backup file format. Plain(p) or tar(t)|
+|-R | Write standby signal and append postgresql.auto.conf|
+|-T OLDDIR=NEWDIR | relocate tablespace in OLDDIR to NEWDIR|
+|--waldir | Write ahead logs location|
+|-z | enable gzip compression for files|
+|-Z level | compression level|
+|-P | Progress Reporting|
+|-h host | host on which cluster is running|
+|-p port | cluster port|
+
+To create a base backup of the server at localhost and store it in the local directory we can use command as below:
+pg_basebackup -h localhost -D /...
