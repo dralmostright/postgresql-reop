@@ -45,9 +45,9 @@ There are multiple other options available to optimize size and time like increa
 |--------|------------|
 |-a |Data Only. Do not dump the data definitions|
 |-s |Data Definitions only. |
-|-n |Dump from specified schema only|
-|-t |Dump specified table only|
-|-f |Send dump to sepcified file|
+|-n <schema> |Dump from specified schema only|
+|-t <table>|Dump specified table only|
+|-f <filename> |Send dump to sepcified file|
 |-Fp |Dump in plain-text SQL script|
 |-Ft |Dump in tar format|
 |-Fd |dump in directory FOrmat|
@@ -65,4 +65,12 @@ Backup taken using pg_dump with custom(Fc), tar(Ft) and directory (Fd) formats n
 <table>
 <tr><th>Options</th><th>Description</th></tr>
 <tr><td>-F[c|d|t]</td><td>Backup file format</td></tr>
+<tr><td>-d <database name></td><td>Connect to the specified database. Also restrores to this database if -C option is omitted</td></tr>
+<tr><td>-C </td><td>Create the database named in the dumpfile and restore directly into it</td></tr>
+<tr><td>-a</td><td>Restore the data only, not the data definitions</td></tr>
+<tr><td>-s</td><td>Restore the data definitionsd</td></tr>
+<tr><td>-n <schema></td><td>Restore only objects from specified schema</td></tr>
+<tr><td>-N <schema></td><td>Do not Restore on specified schema</td></tr>
+<tr><td>-t <table></td><td>Restore only specified table</td></tr>
+<tr><td>-v <table></td><td>Verbose option</td></tr>
 </table>
