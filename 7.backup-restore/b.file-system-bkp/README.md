@@ -197,5 +197,16 @@ postgres=#
 |-h host | host on which cluster is running|
 |-p port | cluster port|
 
+Lets prepare the directory:
+```
+[root@pgvm1 ~]# mkdir /pgdata/backup
+[root@pgvm1 ~]# chown -R postgres:postgres /pgdata/
+[root@pgvm1 ~]#
+```
 To create a base backup of the server at localhost and store it in the local directory we can use command as below:
-pg_basebackup -h localhost -D /...
+```
+[postgres@pgvm1 data]$ pg_basebackup -h localhost -D /pgdata/backup/ -P
+Password:
+34967/34967 kB (100%), 1/1 tablespace
+[postgres@pgvm1 data]$
+```
