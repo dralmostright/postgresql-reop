@@ -210,3 +210,28 @@ Password:
 34967/34967 kB (100%), 1/1 tablespace
 [postgres@pgvm1 data]$
 ```
+
+Lets explore more:
+```
+[postgres@testdb ~]$ pg_basebackup -h localhost -p 5432 -U postgres -D /workspace/pgbackup/pgbkp_14022024 -Fp -Xs -P -v
+Password:
+pg_basebackup: initiating base backup, waiting for checkpoint to complete
+pg_basebackup: checkpoint completed
+pg_basebackup: write-ahead log start point: 0/A000060 on timeline 1
+pg_basebackup: starting background WAL receiver
+pg_basebackup: created temporary replication slot "pg_basebackup_1575"
+65364/65364 kB (100%), 1/1 tablespace
+pg_basebackup: write-ahead log end point: 0/A000138
+pg_basebackup: waiting for background process to finish streaming ...
+pg_basebackup: syncing data to disk ...
+pg_basebackup: renaming backup_manifest.tmp to backup_manifest
+pg_basebackup: base backup completed
+[postgres@testdb ~]$
+```
+
+Options for pg_basebackup are:
+
+-Fp  Format of the backup. Options are “p” for plain and “t” for tar. Plain copies the files in the same layout as the host server’s data directory and tablespaces.
+-Xs  Method to be used for collecting WAL files. The “X” stands for method, and the 's' is for streaming. Other options include: “n” for none, i.e. don’t collect WAL files and “f” for fetch, which collects the WAL files after the backup has been completed.
+-P   Show the progress being made.
+-D  The target directory that the program writes its output to. This option is mandatory.
