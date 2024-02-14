@@ -183,6 +183,35 @@ postgres=# show wal_keep_size;
 postgres=#
 ```
 
+Lets do a manual backup:
+
+To take backup we need to put the database in backup mode:
+```
+[postgres@testdb ~]$ psql -c "SELECT pg_backup_start('level0-14feb');" postgres
+ pg_backup_start
+-----------------
+ 0/C000060
+(1 row)
+
+[postgres@testdb ~]$
+```
+
+Once done we need to take the backup using normal os command like tar, cp, as we are using tar in this situation:
+```
+[postgres@testdb data]$ tar -C /var/lib/pgsql/15/data --exclude=pg_wal -cz -f /workspace/pgbackup/pgbkp_manual/backup.manualfeb14.tar.gz .
+[postgres@testdb data]$
+```
+
+Once backup is done we need to stop the backup:
+```
+[postgres@testdb data]$ psql -c "SELECT pg_backup_stop();" postgres
+ERROR:  backup is not in progress
+HINT:  Did you call pg_backup_start()?
+[postgres@testdb data]$
+```
+I got this error and searching in google they are sying its not a problem but i will explore more in future.
+
+
 ### Options for pg_basebackup
 | Option	| Description |
 | ----------- | ------------- |
@@ -235,3 +264,4 @@ Options for pg_basebackup are:
 * -Xs  Method to be used for collecting WAL files. The “X” stands for method, and the 's' is for streaming. Other options include: “n” for none, i.e. don’t collect WAL files and “f” for fetch, which collects the WAL files after the backup has been completed.
 * -P   Show the progress being made.
 * -D  The target directory that the program writes its output to. This option is mandatory.
+
