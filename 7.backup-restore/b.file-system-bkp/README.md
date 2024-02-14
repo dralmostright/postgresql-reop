@@ -231,7 +231,7 @@ pg_basebackup: base backup completed
 
 Options for pg_basebackup are:
 
--Fp  Format of the backup. Options are “p” for plain and “t” for tar. Plain copies the files in the same layout as the host server’s data directory and tablespaces.
--Xs  Method to be used for collecting WAL files. The “X” stands for method, and the 's' is for streaming. Other options include: “n” for none, i.e. don’t collect WAL files and “f” for fetch, which collects the WAL files after the backup has been completed.
--P   Show the progress being made.
--D  The target directory that the program writes its output to. This option is mandatory.
+* -Fp  Format of the backup. Options are “p” for plain and “t” for tar. Plain copies the files in the same layout as the host server’s data directory and tablespaces.
+* -Xs  Method to be used for collecting WAL files. The “X” stands for method, and the 's' is for streaming. Other options include: “n” for none, i.e. don’t collect WAL files and “f” for fetch, which collects the WAL files after the backup has been completed.
+* -P   Show the progress being made.
+* -D  The target directory that the program writes its output to. This option is mandatory.
