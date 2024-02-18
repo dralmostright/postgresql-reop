@@ -295,7 +295,7 @@ postgres=#
 
 Of course, logging all statements has a performance impact on your system, so you could enable it for enough time to give you between 50 and 200 Mb worth of logs, then disable it again.
 
-We have run the pgbengh and then generated the pgBadger report as below:
+Generating logs is done through the command line using the pgBadger executable. There are a host of options, but the most basic set up is to provide the log line prefix the database uses, the log file, and the output html file. We have run the pgbengh and then generated the pgBadger report as below:
 ```
 [postgres@pgvm1 log]$ pgbadger --prefix '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h ' postgresql-Fri.log -o postgresql.html
 [>                        ] Parsed         0 bytes of 131591663 (0.00%), queries: 0,[>                        ] Parsed      1503 bytes of 131591663 (0.00%), queries: 8,
@@ -342,3 +342,21 @@ LOG: Ok, generating html report...
 ```
 The above command creates a html report, which we can review for possible regression and overall status of the database.
 <img src="imgs/1.png">
+
+The report has muliple tables e.g. Connections, Sessions, Locks e.t.c which we can drill down to have more analysis.
+
+#### Incremental Reports
+pgBadger includes an automatic incremental report mode using option -I or --incremental. When running in this mode, pgBadger will generate one report per day and a cumulative report per week. Output is first done in binary format into the mandatory output directory (see option -O or --outdir), then in HTML format for daily and weekly reports with a main index file.
+
+The main index file will show a dropdown menu per week with a link to each week's report and links to daily reports of each week.
+
+For example, if you run pgBadger as follows based on a daily rotated file:
+```
+    0 4 * * * /usr/bin/pgbadger -I -q /var/log/postgresql/postgresql.log.1 \
+        -O /var/www/pg_reports/
+```
+you will have all daily and weekly reports for the full running period.
+
+In this mode pgBadger will create an automatic incremental file in the output directory, so you don't have to use the -l option unless you want to change the path of that file. This means that you can run pgBadger in this mode each day on a log file rotated each week, and it will not count the log entries twice.
+
+To save disk space you may want to use the -X or --extra-files command line option to force pgBadger to write javascript and css to separate files in the output directory. The resources will then be loaded using script and link tags.
