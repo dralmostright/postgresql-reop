@@ -337,3 +337,57 @@ Appending installation info to /usr/lib64/perl5/perllocal.pod
 /usr/local/bin/pgcluu_collectd
 [root@pgvm1 pgcluu-3.4]#
 ```
+
+pgcluu is divided into two parts:
+* The collector which is responsible for collecting the statistics: pgcluu_collectd
+* The report generator which generates the reports out of the files the collector generated: pgcluu
+To collect statistics start the pgcluu_collectd script as deamon:
+```
+[postgres@pgvm1 pgdata]$ pgcluu_collectd -D -i 10 /pgdata/pgcluu/
+LOG: Setting retention from configuration file to 30
+LOG: Detach from terminal with pid: 13185
+[postgres@pgvm1 pgdata]$
+```
+
+This will collect statistics for the PostgreSQL instance you have the environment set for every 10 seconds and stores the results in the /pgdata/pgcluu/ directory:
+```
+[postgres@pgvm1 pgcluu]$ pwd
+/pgdata/pgcluu
+[postgres@pgvm1 pgcluu]$ ls -ltr | head
+total 468
+-rw-r--r-- 1 postgres postgres      0 Feb 19 16:07 pg_prepared_xact.csv
+-rw-r--r-- 1 postgres postgres      0 Feb 19 16:07 pg_stat_replication.csv
+-rw-r--r-- 1 postgres postgres      0 Feb 19 16:07 pg_stat_user_functions.csv
+-rw-r--r-- 1 postgres postgres      0 Feb 19 16:07 pg_stat_xact_user_functions.csv
+-rw-r--r-- 1 postgres postgres     61 Feb 19 16:07 pg_statio_user_sequences.csv
+-rw-r--r-- 1 postgres postgres    425 Feb 19 16:07 pg_statio_user_indexes.csv
+-rw-r--r-- 1 postgres postgres    449 Feb 19 16:07 pg_stat_user_indexes.csv
+-rw-r--r-- 1 postgres postgres    461 Feb 19 16:07 pg_statio_user_tables.csv
+-rw-r--r-- 1 postgres postgres    936 Feb 19 16:07 pg_stat_user_tables.csv
+[postgres@pgvm1 pgcluu]$ 
+```
+
+After collecting logs for some time we can stop the log collection:
+```
+[postgres@pgvm1 pgcluu]$ pgcluu_collectd -k
+LOG: Setting retention from configuration file to 30
+OK: pgcluu_collectd exited with value 0
+[postgres@pgvm1 pgcluu]$
+```
+Once we have some statistics collected we can generate a report:
+```
+[postgres@pgvm1 ~]$ mkdir -p /pgdata/reports/pgcluu
+[postgres@pgvm1 ~]$ pgcluu -o /pgdata/reports/pgcluu/ /pgdata/pgcluu/
+LOG: Setting retention from configuration file to 30
+LOG: Setting output dir from configuration file to /var/lib/pgcluu/report
+WARNING: No sar data file found. Consider using -S or --disable-sar command
+line option or use -i / -I option to set the path to the data file.
+Continuing normally without reporting sar statistics.
+WARNING: No pidstat data file found.
+Continuing normally without reporting pidstat statistics.
+[postgres@pgvm1 ~]$
+```
+Once the reports are generated on the directory in html files.
+Some snaps of the reports.
+<img src='1.png' >
+<img src='2.png' >
