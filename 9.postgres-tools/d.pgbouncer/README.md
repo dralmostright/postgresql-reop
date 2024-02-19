@@ -262,3 +262,9 @@ SQL script 2: pgsql.sql
 ```
 
 If we compare latency we can easily see the improvement brought by pgBouncer.
+
+In some cases, you may already have an application side connection pool, or have PgBouncer set up on your application side such as an AKS side car. In these cases, it can still be useful to utilize the built-in PgBouncer, as it provides idle connection scaling benefits.
+
+Utilizing an application side pool together with PgBouncer on the database server can be beneficial. Here, the application side pool brings the benefit of reduced initial connection latency (as the initial roundtrip to initialize the connection is much faster), and the database-side PgBouncer provides idle connection scaling.
+
+If PgBouncer is deployed as a feature, it becomes a potential single point of failure. If the PgBouncer feature is down, it can disrupt the entire database connection pool, causing downtime for the application. To mitigate Single point of failure, you can set up multiple PgBouncer instances.
