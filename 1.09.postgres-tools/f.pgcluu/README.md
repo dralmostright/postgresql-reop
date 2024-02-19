@@ -390,4 +390,11 @@ Continuing normally without reporting pidstat statistics.
 Once the reports are generated on the directory in html files.
 Some snaps of the reports.
 <img src='imgs/1.png' >
+
+O/S Statistics:
 <img src='imgs/2.png' >
+
+To get the best of out this you probably should let the collector running all the time and use the build in rotation functionality:
+```
+pgcluu_collectd -D -i 60 --rotate-daily /pgdata/pgcluu/ 
+```
