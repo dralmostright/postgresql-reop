@@ -389,5 +389,5 @@ Continuing normally without reporting pidstat statistics.
 ```
 Once the reports are generated on the directory in html files.
 Some snaps of the reports.
-<img src='1.png' >
-<img src='2.png' >
+<img src='imgs/1.png' >
+<img src='imgs/2.png' >
