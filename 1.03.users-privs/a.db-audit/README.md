@@ -75,3 +75,42 @@ And in log file we can see below entries:
 ```
 2024-02-21 21:58:48 +0545 [1932]: [3-1] user=postgres,db=postgres,app=psql,client=[local] LOG:  statement: create database hellodb;
 ```
+
+Now lets explore pgaudit.
+
+Installation:
+```
+[root@testdb ~]# yum install https://download.postgresql.org/pub/repos/yum/15/redhat/rhel-8-x86_64/pgaudit17_15-1.7.0-1.rhel8.x86_64.rpm
+Last metadata expiration check: 2:31:20 ago on Wed 21 Feb 2024 07:44:14 PM +0545.
+pgaudit17_15-1.7.0-1.rhel8.x86_64.rpm            36 kB/s |  56 kB     00:01
+Dependencies resolved.
+================================================================================
+ Package            Architecture Version               Repository          Size
+================================================================================
+Installing:
+ pgaudit17_15       x86_64       1.7.0-1.rhel8         @commandline        56 k
+
+Transaction Summary
+================================================================================
+Install  1 Package
+
+Total size: 56 k
+Installed size: 98 k
+Is this ok [y/N]: y
+Downloading Packages:
+Running transaction check
+Transaction check succeeded.
+Running transaction test
+Transaction test succeeded.
+Running transaction
+  Preparing        :                                                        1/1
+  Installing       : pgaudit17_15-1.7.0-1.rhel8.x86_64                      1/1
+  Running scriptlet: pgaudit17_15-1.7.0-1.rhel8.x86_64                      1/1
+  Verifying        : pgaudit17_15-1.7.0-1.rhel8.x86_64                      1/1
+
+Installed:
+  pgaudit17_15-1.7.0-1.rhel8.x86_64
+
+Complete!
+[root@testdb ~]#
+```
