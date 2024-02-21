@@ -279,7 +279,33 @@ sync_state       | async
 replay_lag       |
 
 postgres=#
+postgres=# SELECT application_name,
+postgres-#     state,
+postgres-#     sync_state,
+postgres-#     client_addr,
+postgres-#     client_hostname,
+postgres-#     pg_wal_lsn_diff(pg_current_wal_lsn(),sent_lsn) AS sent_lag,
+postgres-#     pg_wal_lsn_diff(sent_lsn,flush_lsn) AS receiving_lag,
+postgres-#     pg_wal_lsn_diff(flush_lsn,replay_lsn) AS replay_lag,
+postgres-#     pg_wal_lsn_diff(pg_current_wal_lsn(),replay_lsn) AS total_lag,
+postgres-#     now()-reply_time AS reply_delay
+postgres-# FROM pg_stat_replication
+postgres-# ORDER BY client_hostname;
+-[ RECORD 1 ]----+----------------
+application_name | walreceiver
+state            | streaming
+sync_state       | async
+client_addr      | 192.168.229.140
+client_hostname  |
+sent_lag         | 0
+receiving_lag    | 0
+replay_lag       | 0
+total_lag        | 0
+reply_delay      | 00:00:03.690395
+
+postgres=#
 ```
+
 
 On Standby:
 ```
@@ -292,6 +318,45 @@ pg_last_wal_replay_lsn        | 0/C3002530
 pg_last_xact_replay_timestamp | 2024-02-21 05:48:09.272547-05
 
 postgres=#
+postgres=# SELECT CASE
+postgres-#     WHEN pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn() THEN 0
+postgres-#     ELSE EXTRACT(EPOCH FROM now() - pg_last_xact_replay_timestamp())
+postgres-# END AS log_delay;
+-[ RECORD 1 ]
+log_delay | 0
+
+postgres=#
 ```
 
 #### Automatic removal of obsolete WALs
+
+pg_archivecleanup is used to automatically clean up WAL file archives when running as a standby server. This minimizes the number of WAL files that need to be retained, while preserving crash-restart capability.  The below parameter needs to be included in the postgresql.conf file on the standby server.
+
+This optional parameter specifies a shell command that will be executed at every restartpoint. The purpose of archive_cleanup_command is to provide a mechanism for cleaning up old archived WAL files that are no longer needed by the standby server. Any %r is replaced by the name of the file containing the last valid restart point. That is the earliest file that must be kept to allow a restore to be restartable, and so all files earlier than %r may be safely removed. This information can be used to truncate the archive to just the minimum required to support restart from the current restore. The pgarchivecleanup module is often used in archive_cleanup_command for single-standby configurations, for example:
+```archive_cleanup_command = 'pg_archivecleanup /walarc/pg14/archive %r'```
+
+Note however that if multiple standby servers are restoring from the same archive directory, you will need to ensure that you do not delete WAL files until they are no longer needed by any of the servers. archive_cleanup_command would typically be used in a warm-standby configuration (see warm-standby). Write %% to embed an actual % character in the command.
+
+If the command returns a nonzero exit status then a warning log message will be written. An exception is that if the command was terminated by a signal or an error by the shell (such as command not found), a fatal error will be raised.
+
+This parameter can only be set in the postgresql.conf file.
+```
+postgres=# show archive_cleanup_command;
+ archive_cleanup_command
+-------------------------
+
+(1 row)
+
+postgres=# 
+
+[postgres@pgvm2 data]$ vi postgresql.conf
+
+postgres=# SELECT pg_reload_conf();
+ pg_reload_conf
+----------------
+ t
+(1 row)
+
+postgres=#
+```
+
