@@ -333,6 +333,7 @@ postgres=#
 pg_archivecleanup is used to automatically clean up WAL file archives when running as a standby server. This minimizes the number of WAL files that need to be retained, while preserving crash-restart capability.  The below parameter needs to be included in the postgresql.conf file on the standby server.
 
 This optional parameter specifies a shell command that will be executed at every restartpoint. The purpose of archive_cleanup_command is to provide a mechanism for cleaning up old archived WAL files that are no longer needed by the standby server. Any %r is replaced by the name of the file containing the last valid restart point. That is the earliest file that must be kept to allow a restore to be restartable, and so all files earlier than %r may be safely removed. This information can be used to truncate the archive to just the minimum required to support restart from the current restore. The pgarchivecleanup module is often used in archive_cleanup_command for single-standby configurations, for example:
+
 ```archive_cleanup_command = 'pg_archivecleanup /walarc/pg14/archive %r'```
 
 Note however that if multiple standby servers are restoring from the same archive directory, you will need to ensure that you do not delete WAL files until they are no longer needed by any of the servers. archive_cleanup_command would typically be used in a warm-standby configuration (see warm-standby). Write %% to embed an actual % character in the command.
@@ -358,5 +359,9 @@ postgres=# SELECT pg_reload_conf();
 (1 row)
 
 postgres=#
-```
+postgres=# show archive_cleanup_command;
+-[ RECORD 1 ]-----------+------------------------------------------
+archive_cleanup_command | pg_archivecleanup /walarc/pg14/archive %r
 
+postgres=#
+```
