@@ -17,10 +17,22 @@ When we start the standby instance, it begins by restoring all WAL available in 
 
 Streaming replication requires that the Operating System and PostgreSQL/EPAS (EDB Postgres Advanced Server) versions should be the same across both primary and standby servers. There are a few changes in approach since PostgreSQL version 12 onwards.  
 
+
+#### Synchronism
+* In Asynchronous Replication data is transferred to a different node without waiting for a confirmation of its receiving.
+* In Synchronous Replication the data transfer waits - in the case of a COMMIT - for a confirmation of its successful processing on the standby.
+Primary parameter: 'synchronous_standby_names' in postgres.conf on master server.
+
+#### Standby Mode
+
+* Hot: In Hot Standby Mode the standby server runs in 'recovery mode', accepts client connections, and processes their read-only queries.
+* Warm: In Warm Standby Mode the standby server runs in 'recovery mode' and doesn't allow clients to connect.
+* Cold: Although it is not an official PostgreSQL term, Cold Standby Mode can be associated with a not running standby server with log-shipping technique. The WAL files are transferred to the standby but not processed until the standby starts up.
+
 Operating System/PostgreSQL version:
 |Operating System | PostgreSQL version |
 |-----------------|--------------------|
-|OEL 8.5          | PostgreSQL 15      |
+|OEL 8.5          | PostgreSQL 14.8      |
 
 
 Server Configurations:
@@ -28,3 +40,78 @@ Server Configurations:
 |-----------------|--------------------|-----|
 |Primary |192.168.229.138 | 5432 |
 |Secondary | 192.168.229.134 | 5432 |
+
+#### Configuration of Streaming Replication
+Now we will go step by step to configure standby:
+
+Configuration changes on Primary:
+
+##### Parameters:
+
+<strong>Changes required in postgresql.conf</strong>
+First we will verify and then make changes as needed:
+```
+postgres=# show listen_addresses;
+ listen_addresses
+------------------
+ *
+(1 row)
+
+postgres=# 
+postgres=# show archive_mode;
+ archive_mode
+--------------
+ on
+(1 row)
+
+postgres=# 
+postgres=# show max_wal_senders;
+ max_wal_senders
+-----------------
+ 10
+(1 row)
+
+postgres=# 
+postgres=# show max_wal_size;
+ max_wal_size
+--------------
+ 1GB
+(1 row)
+
+postgres=# 
+postgres=# show wal_level;
+ wal_level
+-----------
+ replica
+(1 row)
+
+postgres=# 
+postgres=# show hot_standby;
+ hot_standby
+-------------
+ on
+(1 row)
+
+postgres=# 
+postgres=# show archive_command;
+                          archive_command
+--------------------------------------------------------------------
+ test ! -f /walarc/pg14/archive/%f && cp %p /walarc/pg14/archive/%f
+(1 row)
+
+postgres=#
+```
+
+As all the required parameters are set, there are no changes required:
+
+
+<Strong>Changes required in pg_hba.conf</strong>
+Set up authentication on the primary server to allow replication connections from the standby server(s).
+```
+[postgres@pgvm1 data]$ vi pg_hba.conf
+[postgres@pgvm1 data]$
+[postgres@pgvm1 data]$ cat pg_hba.conf | grep trust
+# METHOD can be "trust", "reject", "md5", "password", "scram-sha-256",
+host    replication     all             192.168.229.240/32      trust
+[postgres@pgvm1 data]$
+```
