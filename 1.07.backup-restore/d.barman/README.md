@@ -474,6 +474,25 @@ Processing xlog segments from file archival for pgdb-bkp
         0000000300000000000000E2.00000028.backup
 [barman@pgvm2 ~]$
 ```
+Incremental Backups using Barman:
+```
+[barman@pgvm2 ~]$ barman backup --reuse=link pgdb-bkp --wait
+Starting backup using rsync-concurrent method for server pgdb-bkp in /pgdata/pgbkp/pgdb-bkp/base/20240222T134929
+Backup start at LSN: 0/E4000028 (0000000300000000000000E4, 00000028)
+Starting backup copy via rsync/SSH for 20240222T134929
+Copy done (time: less than one second)
+Asking PostgreSQL server to finalize the backup.
+Backup size: 798.5 MiB. Actual size on disk: 8.9 KiB (-100.00% deduplication ratio).
+Backup end at LSN: 0/E4000100 (0000000300000000000000E4, 00000100)
+Backup completed (start time: 2024-02-22 13:49:29.620511, elapsed time: 3 seconds)
+Waiting for the WAL file 0000000300000000000000E4 from server 'pgdb-bkp'
+Processing xlog segments from file archival for pgdb-bkp
+        0000000300000000000000E3
+        0000000300000000000000E4
+        0000000300000000000000E4.00000028.backup
+[barman@pgvm2 ~]$
+```
+
 Reporting Backups:
 ```
 [barman@pgvm2 ~]$ barman list-backup pgdb-bkp
@@ -512,5 +531,26 @@ Backup 20240222T133508:
     Retention Policy     : VALID
     Previous Backup      : - (this is the oldest base backup)
     Next Backup          : - (this is the latest base backup)
+[barman@pgvm2 ~]$
+[barman@pgvm2 ~]$ barman status pgdb-bkp
+Server pgdb-bkp:
+        Description: PostgreSQL Database Backup Config
+        Active: True
+        Disabled: False
+        PostgreSQL version: 14.8
+        Cluster state: in production
+        Current data size: 798.4 MiB
+        PostgreSQL Data directory: /var/lib/pgsql/14/data
+        Current WAL segment: 0000000300000000000000E3
+        PostgreSQL 'archive_command' setting: test ! -f barman@192.168.229.140:/pgdata/pgbkp/pgdb-bkp/incoming/%f && rsync -a %p barman@192.168.229.140:/pgdata/pgbkp/pgdb-bkp/incoming/%f
+        Last archived WAL: 0000000300000000000000E2.00000028.backup, at Thu Feb 22 02:50:21 2024
+        Failures of WAL archiver: 15 (0000000300000000000000CC at Thu Feb 22 02:26:11 2024)
+        Server WAL archiving rate: 25.25/hour
+        Passive node: False
+        Retention policies: enforced (mode: auto, retention: RECOVERY WINDOW OF 4 WEEKS, WAL retention: MAIN)
+        No. of available backups: 1
+        First available backup: 20240222T133508
+        Last available backup: 20240222T133508
+        Minimum redundancy requirements: FAILED (1/3)
 [barman@pgvm2 ~]$
 ```
